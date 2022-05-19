@@ -10,11 +10,17 @@
 //INCLUDE
 #include	"GameApp.h"
 #include	"Player.h"
+#include	"Stage.h"
 
 CCamera				gCamera;
 CDirectionalLight	gLight;
 CPlayer				gPlayer;
+CStage				gStage;
 bool				gbDebug = false;
+
+CVector3			gCameraPosition;
+CVector3			gTargetPosition;
+CVector3			gUpVector;
 
 
 /*************************************************************************//*!
@@ -28,19 +34,25 @@ MofBool CGameApp::Initialize(void){
 	//リソース配置ディレクトリの設定
 	CUtilities::SetCurrentDirectory("Resource");
 	gCamera.SetViewPort();
-	gCamera.LookAt(Vector3(0, 6.0f, -17.0f), Vector3(0, 0, -10), Vector3(0, 1, 0));
+	gCameraPosition = Vector3(0, 6.0f, -17.0f);
+	gTargetPosition = Vector3(0, 0, -10);
+	gUpVector = Vector3(0, 1, 0);
 	gCamera.PerspectiveFov(MOF_ToRadian(60.0f), 1024.0f / 768.0f, 0.01f, 1000.0f);
 	CGraphicsUtilities::SetCamera(&gCamera);
 
 	gLight.SetDirection(Vector3(-1, -2, 1.5f));
 	gLight.SetDiffuse(MOF_COLOR_WHITE);
-	gLight.SetAmbient(MOF_COLOR_WHITE);
+	gLight.SetAmbient(MOF_COLOR_HWHITE);
 	gLight.SetSpeculer(MOF_COLOR_WHITE);
 	CGraphicsUtilities::SetDirectionalLight(&gLight);
 
 	gPlayer.Load();
 
+	gStage.Load();
+
 	gPlayer.Initialize();
+
+	gStage.Initialize();
 	
 	return TRUE;
 }
@@ -54,6 +66,7 @@ MofBool CGameApp::Initialize(void){
 MofBool CGameApp::Update(void){
 	//キーの更新
 	g_pInput->RefreshKey();
+	gStage.Update();
 	gPlayer.Update();
 	if (g_pInput->IsKeyPush(MOFKEY_F1))
 	{
@@ -61,11 +74,12 @@ MofBool CGameApp::Update(void){
 	}
 
 	float posX = gPlayer.GetPosition().x * 0.4f;
-	CVector3 cpos = gCamera.GetViewPosition();
-	CVector3 tpos = gCamera.GetTargetPosition();
-	CVector3 vup = Vector3(0, 1, 0);
+	CVector3 cpos = gCameraPosition;
+	CVector3 tpos = gTargetPosition;
+	CVector3 vup = gUpVector;
 	cpos.x = posX;
 	tpos.x = posX;
+	vup.RotationZ(gPlayer.GetPosition().x / FIELD_HALF_X * MOF_ToRadian(10.0f));
 	gCamera.LookAt(cpos, tpos, vup);
 	gCamera.Update();
 	return TRUE;
@@ -87,6 +101,8 @@ MofBool CGameApp::Render(void){
 	//震度バッファ
 	g_pGraphics->SetDepthEnable(TRUE);
 
+	gStage.Render();
+
 	gPlayer.Render();
 	if (gbDebug) 
 	{
@@ -99,6 +115,7 @@ MofBool CGameApp::Render(void){
 
 	if (gbDebug)
 	{
+		gStage.RenderDebugText();
 		gPlayer.RenderDebugText();
 	}
 
@@ -114,6 +131,7 @@ MofBool CGameApp::Render(void){
 						それ以外	失敗、エラーコードが戻り値となる
 *//**************************************************************************/
 MofBool CGameApp::Release(void){
+	gStage.Release();
 	gPlayer.Release();
 	return TRUE;
 }

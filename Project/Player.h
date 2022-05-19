@@ -10,6 +10,7 @@ private:
 	CMeshContainer	m_Mesh;
 	CVector3		m_Pos;
 	float			m_RotZ;
+	float			m_Speed;
 public:
 	CPlayer();
 	~CPlayer();
