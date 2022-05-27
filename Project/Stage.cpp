@@ -6,7 +6,10 @@
  */
 CStage::CStage():
 m_BG(),
-m_Scroll(0.0f){
+m_Scroll(0.0f),
+m_pEnemyStart(NULL),
+m_EnemyMesh(),
+m_EnemyNo(0){
 }
 
 /**
@@ -25,28 +28,55 @@ bool CStage::Load(){
 	{
 		return false;
 	}
+	if (!m_EnemyMesh.Load("enemy.mom")) 
+	{
+		return false;
+	}
 	return true;
 }
 
 /**
  * 初期化
  *
+ * 引数
+ * [in]         pSt            敵の開始情報配列
  */
-void CStage::Initialize(){
+void CStage::Initialize(ENEMYSTART*pSt){
 	m_BG.m_Angle.x = MOF_MATH_HALFPI;
 	m_BG.m_Angle.y = MOF_MATH_HALFPI;
 	m_BG.m_Scale = Vector3(200, 200, 200);
 	m_BG.m_Position.y = -15;
 	m_BG.SetImageRect(0, 0, m_BG.GetTexture()->GetWidth() * 4, m_BG.GetTexture()->GetHeight() * 4);
 	m_Scroll = 0;
+	m_EnemyNo = 0;
+	m_pEnemyStart = pSt;
 }
 
 /**
  * 更新
  *
  */
-void CStage::Update(){
+void CStage::Update(CEnemy* ene,int ecnt){
 	m_Scroll += SCROLL_SPEED;
+
+	if (m_EnemyNo < m_pEnemyStart->Count && m_Scroll >= m_pEnemyStart->Scroll[m_EnemyNo])
+	{
+		for (int i = 0; i < ecnt; i++) 
+		{
+			if (ene[i].GetShow())
+			{
+				continue;
+			}
+			ene[i].SetMesh(&m_EnemyMesh);
+			ene[i].Start(Vector3(m_pEnemyStart->PosX[m_EnemyNo], 0, 0));
+			break;
+		}
+		m_EnemyNo++;
+	}
+	if (m_Scroll > 1100) {
+		m_Scroll = 0;
+		m_EnemyNo = 0;
+	}
 }
 
 /**
@@ -69,7 +99,7 @@ void CStage::Render(){
 void CStage::RenderDebugText(){
 	//スクロール値の描画
 	CGraphicsUtilities::RenderString(10,10,MOF_XRGB(0,0,0),
-		"スクロール : %.0f",m_Scroll);
+		"スクロール : %.0f,敵の出現番号 : %dm",m_Scroll,m_EnemyNo);
 }
 
 /**
@@ -78,4 +108,5 @@ void CStage::RenderDebugText(){
  */
 void CStage::Release(){
 	m_BG.Release();
+	m_EnemyMesh.Release();
 }
