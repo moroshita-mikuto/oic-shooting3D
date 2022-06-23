@@ -105,25 +105,22 @@ MofBool CGameApp::Update(void){
 
 	gBoss.SetTargetPos(gPlayer.GetPosition());
 	gBoss.Update(gShotArray, ENEMYSHOT_COUNT);
-	for (int i = 0; i < ENEMYSHOT_COUNT; i++) {
+	for (int i = 0; i < ENEMYSHOT_COUNT; i++)
+	{
 		gShotArray[i].Update();
 	}
 	for (int i = 0; i < ENEMY_COUNT; i++) 
 	{
 		gPlayer.CollisionEnemy(gEnemyArray[i]);
 	}
+	gPlayer.CollisionBoss(gBoss);
 	for (int i = 0; i < ENEMYSHOT_COUNT; i++)
 	{
 		gPlayer.CollisionEnemyShot(gShotArray[i]);
 	}
-	gPlayer.CollisionBoss(gBoss);
-	if (g_pInput->IsKeyPush(MOFKEY_F1))
-	{
-		gbDebug = ((gbDebug ? false : true));
-	}
 	if (!gbEnemyDestroyed && gStage.IsAllEnemy())
 	{
-		bool btmp = true; 
+		bool btmp = true;
 		for (int i = 0; i < ENEMY_COUNT; i++)
 		{
 			if (gEnemyArray[i].GetShow())
@@ -132,7 +129,7 @@ MofBool CGameApp::Update(void){
 			}
 		}
 		gbEnemyDestroyed = btmp;
-		if (gbEnemyDestroyed) 
+		if (gbEnemyDestroyed)
 		{
 			gBoss.Start();
 			gBoss.SetTargetPos(gPlayer.GetPosition());
@@ -140,10 +137,16 @@ MofBool CGameApp::Update(void){
 		}
 	}
 
-	if (!gbClear && gbEnemyDestroyed && !gBoss.GetShow()) 
+	if (!gbClear && gbEnemyDestroyed && !gBoss.GetShow())
 	{
 		gbClear = true;
 	}
+	
+	if (g_pInput->IsKeyPush(MOFKEY_F1))
+	{
+		gbDebug = ((gbDebug ? false : true));
+	}
+	
 	if (g_pInput->IsKeyPush(MOFKEY_RETURN) && (gPlayer.IsDead() || gbClear))
 	{
 		gbEnemyDestroyed = false;

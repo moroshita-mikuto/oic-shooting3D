@@ -41,7 +41,7 @@ bool CStage::Load(){
  * ˆø”
  * [in]         pSt            “G‚ÌŠJnî•ñ”z—ñ
  */
-void CStage::Initialize(ENEMYSTART*pSt){
+void CStage::Initialize(ENEMYSTART *pSt){
 	m_BG.m_Angle.x = MOF_MATH_HALFPI;
 	m_BG.m_Angle.y = MOF_MATH_HALFPI;
 	m_BG.m_Scale = Vector3(200, 200, 200);

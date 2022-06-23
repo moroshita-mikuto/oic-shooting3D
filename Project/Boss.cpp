@@ -175,7 +175,7 @@ void CBoss::RotateTarget(){
  */
 void CBoss::ShotAllDirShot(CEnemyShot* shot, int smax, int sCnt){
 
-	if (m_ShotWait > 0) 
+	if (m_ShotWait > 0)
 	{
 		m_ShotWait--;
 		return;
