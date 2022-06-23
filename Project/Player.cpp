@@ -256,3 +256,35 @@ void CPlayer::CollisionEnemyShot(CEnemyShot& shot) {
 		shot.SetShow(false);
 	}
 }
+
+void CPlayer::CollisionBoss(CBoss& boss) {
+	if (!boss.GetShow())
+	{
+		return;
+	}
+	CSphere ps = GetSphere();
+	CSphere bs = boss.GetSphere();
+	if (ps.CollisionSphere(bs))
+	{
+		m_bDead = true;
+	}
+
+	for (int i = 0; i < PLAYERSHOT_COUNT; i++) 
+	{
+		if (!m_ShotArray[i].GetShow()) 
+		{
+			continue;
+		}
+		CSphere ss = m_ShotArray[i].GetSphere();
+		if (ss.CollisionSphere(bs))
+		{
+			boss.Damage(1);
+			m_ShotArray[i].SetShow(false);
+			break;
+		}
+	}
+	for (int i = 0; i < BOSS_PARTS_MAX; i++)
+	{
+		CollisionEnemy(boss.GetParts(i));
+	}
+}

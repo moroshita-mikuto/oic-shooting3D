@@ -51,7 +51,7 @@ void CEnemy::Initialize(){
  * 開始
  *
  */
-void CEnemy::Start(const Vector3& p){
+void CEnemy::Start(const Vector3& p, int t){
 	m_Pos = p;
 	m_Rot = Vector3(0, 0, 0);
 	m_bShow = true;
@@ -60,16 +60,37 @@ void CEnemy::Start(const Vector3& p){
 	m_ShotWaitSet = 40; 
 	m_TargetPos = Vector3(0, 0, 0);
 	m_AnimTime = 0;
+
+	m_Type = t;
+	switch (m_Type)
+	{
+	case1:
+	case2:
+	case3:
+		m_HP = 100;
+		m_ShotWaitSet = 100;
+		m_ShotWait = m_ShotWaitSet;
+		break;
+	}
 }
 
 /**
  * 更新
  *
  */
-void CEnemy::Update(CEnemyShot* shot,int smax){
+void CEnemy::Update(CEnemyShot* shot, int smax) {
 	if (!GetShow()) {
 		return;
 	}
+	switch (m_Type)
+	{
+	case0:	UpdateType0(shot, smax);	break;
+	case1:
+	case2:
+	case3:	UpdateBossParts(shot, smax);	break;
+	}
+}
+void CEnemy::UpdateType0(CEnemyShot* shot, int smax) {
 	m_AnimTime += CUtilities::GetFrameSecond();
 	m_Pos.y = InterpolationAnim(m_AnimTime, g_EnemyAnimPosY, 2);
 	m_Pos.z = InterpolationAnim(m_AnimTime, g_EnemyAnimPosZ, 5);
@@ -78,29 +99,70 @@ void CEnemy::Update(CEnemyShot* shot,int smax){
 		if (m_ShotWait <= 0)
 		{
 			CEnemyShot* newShot = CEnemyShot::FindAvailableShot(shot, smax);
-			if (newShot) 
+			if (newShot)
 			{
 				m_ShotWait = m_ShotWaitSet;
 				Vector3 direction = m_TargetPos - m_Pos;
 				float distance = CVector3Utilities::Length(direction);
-				if (distance > 0) 
+				if (distance > 0)
 				{
 					direction /= distance;
 					newShot->Fire(m_Pos, direction * 0.075f);
 				}
 			}
 		}
-		else 
+		else
 		{
 			m_ShotWait--;
 		}
 	}
-	if (g_EnemyAnimPosZ[4].Time < m_AnimTime) 
+	if (g_EnemyAnimPosZ[4].Time < m_AnimTime)
 	{
 		m_bShow = false;
 	}
-
 }
+
+void CEnemy::UpdateBossParts(CEnemyShot* shot, int smax) {
+	if (m_ShotWait <= 0) 
+	{
+		m_ShotWait = m_ShotWaitSet;
+	}
+	else 
+	{
+		m_ShotWait--;
+	}
+
+	if (m_ShotWait % 10 == 0 && m_ShotWait / 10 < 3) 
+	{
+		int sCnt = m_Type - 1;
+		for (int cnt = -sCnt; cnt <= sCnt; cnt++)
+		{
+			CEnemyShot* newShot = CEnemyShot::FindAvailableShot(shot, smax);
+			if (!newShot) 
+			{
+				continue;
+			}
+
+			Vector3 pos = m_Pos;
+			Vector3 direction = m_TargetPos - pos;
+
+			float distance = CVector3Utilities::Length(direction);
+
+			if (distance <= 0) 
+			{
+				continue;
+			}
+
+			direction /= distance;
+			float ad = atan2(direction.z, direction.x) + cnt * MOF_ToRadian(10);
+			Vector3 vt(cos(ad), 0, sin(ad));
+			newShot->Fire(pos, vt * 0.2f);
+		}
+	}
+}
+	
+
+
 
 /**
  * 描画
